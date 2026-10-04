@@ -80,6 +80,41 @@ This project delivers a **Cross-Department Permit Workflow Tracker** built speci
 
 ---
 
+## 🧪 Granular Unit Testing & Error Boundaries
+
+The application includes an automated test harness (`src/services/testHarness.ts`) enforcing strict state invariants and custom error boundaries (`WorkflowValidationError`).
+
+### 1. Invariant Assertions & Failure Test Matrix
+* **TC-01 [Missing Document Safeguard]:** Validates that an application with incomplete documentation is blocked at `DOCUMENTS_PENDING` with an explicit delay reason (`Awaiting applicant document`). Asserts that calling `approveApplication()` directly throws `WorkflowValidationError`.
+* **TC-02 [Unaccepted Handoff Ownership Retention]:** Validates that initiating a cross-department handoff sets status to `PENDING_HANDOFF_ACCEPTANCE` while preserving the sender as `currentOwner`. Asserts ownership only shifts upon `acceptHandoff()`.
+* **TC-03 [Offline Field Capture & Queue Sync]:** Validates offline state persistence via local queue storage, verifies `pending_sync` badges, and asserts lossless merge upon `syncLocalQueue()`.
+* **TC-04 [Premature Approval Prevention]:** Asserts that approvals fail if an application has unresolved delays (`status === 'DELAYED'`) or unverified document packages.
+* **TC-05 [Valid Cross-Department Handoff]:** Validates end-to-end multi-department routing, timestamped event generation, and timeline immutability.
+
+### 2. Error Boundary Architecture
+All workflow operations are wrapped in declarative `try/catch` error boundaries that surface actionable error prompts in the UI without crashing the application tree.
+
+---
+
+## 🔌 API & Workflow Engine Services
+
+The deterministic core engine exposes typed functional primitives:
+
+| Function Signature | Purpose | State Invariants Enforced |
+| :--- | :--- | :--- |
+| `createNewApplication(params): PermitApplication` | Initializes permit application with SLA timestamp. | Verifies required docs; assigns `Intake Officer`. |
+| `verifyDocuments(app, docs, verifier): PermitApplication` | Updates document checklist. | Automatically flags missing docs; clears delays when complete. |
+| `initiateHandoff(app, params): PermitApplication` | Initiates transfer to destination department. | Throws if documents incomplete or pending handoff exists. |
+| `acceptHandoff(app, acceptingOwner): PermitApplication` | Completes transfer of active responsibility. | Shifts `currentDepartment` and `currentOwner`; logs timeline. |
+| `logDelay(app, params): PermitApplication` | Records accountable non-punitive delay reason. | Enforces controlled reason enum & minimum 5-char note. |
+| `resolveDelay(app, resolver, notes): PermitApplication` | Resolves bottleneck and resumes review. | Restores active status (`IN_REVIEW`). |
+| `approveApplication(app, approver, notes): PermitApplication` | Issues final permit approval. | Throws if documents missing, delayed, or handoff pending. |
+| `rejectApplication(app, rejector, reason): PermitApplication` | Issues permit rejection with recorded justification. | Requires minimum 10-character explanatory justification. |
+| `saveApplicationLocally(app): void` | Caches application in local offline queue. | Preserves offline state with `pending_sync`. |
+| `syncLocalQueue(): PermitApplication[]` | Merges offline queue into central store. | Emits `OFFLINE_SYNC` audit event with zero duplicates. |
+
+---
+
 ## 📊 Measurable Experiment Summary (N=100 Synthetic Applications)
 
 | Metric | Baseline Queue | Target Goal | Prototype Result | Improvement |

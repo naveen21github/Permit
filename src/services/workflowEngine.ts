@@ -1,3 +1,9 @@
+/**
+ * Cross-Department Permit Workflow Tracker - Core Workflow Engine
+ * Milestone: Phase 2 & Phase 3 (75% Scope)
+ * Enforces: Department handoffs, document checking gates, accountable delay logging, and approval decision rules.
+ */
+
 import {
   PermitApplication,
   WorkflowStatus,

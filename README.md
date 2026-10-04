@@ -74,7 +74,7 @@ This project delivers a **Cross-Department Permit Workflow Tracker** built speci
 
 5. **Run Automated Edge-Case Test Suite & Synthetic Benchmark:**
    ```bash
-   npx tsx C:\Users\Nithish\.gemini\antigravity\brain\de2d55a9-bee2-4c76-8708-faecc0720061\scratch\run_experiment_and_tests.ts
+   npm test
    ```
    *(Or navigate to the **Test Harness** and **Experiment Report** tabs directly in the web UI).*
 
@@ -121,7 +121,10 @@ Permit/
 │   ├── RISK_REGISTER.md
 │   ├── STAKEHOLDER_VALIDATION.md
 │   ├── USER_GUIDE.md
-│   └── phase1_report.md
+│   ├── phase1_report.md
+│   └── phase2_3_report.md
+├── scripts/
+│   └── runTests.ts            # Standalone Automated Test Runner
 ├── index.html
 ├── package.json
 ├── tsconfig.json
